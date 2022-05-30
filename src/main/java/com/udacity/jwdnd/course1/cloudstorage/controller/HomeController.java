@@ -29,7 +29,7 @@ public class HomeController {
     public  ModelAndView homPage() throws Exception {
         ModelAndView modelAndView=new ModelAndView("home");
         //List<Users> listUsers= userService.findAll();
-        modelAndView.addObject("files", fileService.getAllFiles(1));
+        modelAndView.addObject("files", fileService.findAllFiles(1));
         modelAndView.addObject("notes",notesService.getAllNotes(1));
         modelAndView.addObject("credentials",credentialsService.getAllCredentials(1));
         return modelAndView;
