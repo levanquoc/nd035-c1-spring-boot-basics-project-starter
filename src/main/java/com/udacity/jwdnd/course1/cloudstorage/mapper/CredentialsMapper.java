@@ -1,0 +1,24 @@
+package com.udacity.jwdnd.course1.cloudstorage.mapper;
+
+import com.udacity.jwdnd.course1.cloudstorage.model.Credentials;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Mapper
+@Repository
+
+public interface CredentialsMapper {
+    @Insert("INSERT INTO CREDENTIALS (url, username, key, password, userid) VALUES (#{credentials.url}, #{credentials.username}, #{credentials.key}, #{credentials.password}, #{userid})")
+   public int addCredentials(Credentials credentials, int userid);
+
+    @Select("SELECT * FROM CREDENTIALS WHERE USERID=#{userid}")
+    public List<Credentials> getAllCredentials(int userid);
+
+    @Delete("DELETE CREDENTIALS WHERE credentialid=#{credentialid}")
+    public int deleteCredentials(int credentialid);
+}
