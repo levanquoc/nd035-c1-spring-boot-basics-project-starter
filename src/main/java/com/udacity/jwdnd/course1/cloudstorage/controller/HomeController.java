@@ -9,7 +9,7 @@ import com.udacity.jwdnd.course1.cloudstorage.services.NotesService;
 import com.udacity.jwdnd.course1.cloudstorage.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class HomeController {
     private NotesService notesService;
     @Autowired
     private CredentialsService credentialsService;
-    @RequestMapping({"/home","/"})
+    @GetMapping({"/home","/"})
     public  ModelAndView homPage() throws Exception {
         ModelAndView modelAndView=new ModelAndView("home");
         //List<Users> listUsers= userService.findAll();
@@ -34,9 +34,5 @@ public class HomeController {
         modelAndView.addObject("credentials",credentialsService.getAllCredentials(1));
         return modelAndView;
     }
-    @RequestMapping("/result")
-    public String result(){
 
-        return "result";
-    }
 }
