@@ -2,6 +2,7 @@ package com.udacity.jwdnd.course1.cloudstorage.controller;
 
 import com.udacity.jwdnd.course1.cloudstorage.model.Users;
 import com.udacity.jwdnd.course1.cloudstorage.services.FileService;
+import com.udacity.jwdnd.course1.cloudstorage.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -16,14 +17,16 @@ import java.io.IOException;
 public class FileController {
     @Autowired
     private FileService fileService;
+    @Autowired
+    private UserService userService;
     @PostMapping("/files")
     public String saveFile(Authentication authentication, MultipartFile fileUpload) throws IOException {
-        //Users user = (Users) authentication.getPrincipal();
-        //System.out.println(user.getUserName());
+        String userLogin=  authentication.getPrincipal().toString();
+        Users users = userService.getUser(userLogin);
         if (fileUpload.isEmpty()) {
             return "redirect:/result?error";
         }
-        fileService.addFile(fileUpload, 1);
+        fileService.addFile(fileUpload, users.getUserId());
         return "redirect:/result?success";
     }
     @GetMapping("/files/delete")

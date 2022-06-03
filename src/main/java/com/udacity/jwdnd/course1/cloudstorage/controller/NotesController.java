@@ -1,8 +1,11 @@
 package com.udacity.jwdnd.course1.cloudstorage.controller;
 
 import com.udacity.jwdnd.course1.cloudstorage.model.Notes;
+import com.udacity.jwdnd.course1.cloudstorage.model.Users;
 import com.udacity.jwdnd.course1.cloudstorage.services.NotesService;
+import com.udacity.jwdnd.course1.cloudstorage.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -13,11 +16,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class NotesController {
     @Autowired
     private NotesService notesService;
+    @Autowired
+    private UserService userService;
     @PostMapping("/notes")
-    public String updateOrAddNotes(@ModelAttribute Notes notes){
-        System.out.println(notes.getNoteid());
+    public String updateOrAddNotes(Authentication authentication, @ModelAttribute Notes notes){
+        String userLogin=  authentication.getPrincipal().toString();
+        Users users = userService.getUser(userLogin);
         if(notes.getNoteid()==0) {
-            if (notesService.addNotes(notes, 1) > 0) {
+            if (notesService.addNotes(notes, users.getUserId()) > 0) {
                 return "redirect:/result?success";
             }
         }
