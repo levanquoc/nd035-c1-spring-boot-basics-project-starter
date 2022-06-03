@@ -45,4 +45,8 @@ public class CredentialsService {
     public int deleteCredentials(int credentialid) {
         return credentialsMapper.deleteCredentials(credentialid);
     }
+
+    public int updateCredentials(Credentials credentials) {
+        return credentialsMapper.updateCredentials(this.encryptPassword(credentials));
+    }
 }

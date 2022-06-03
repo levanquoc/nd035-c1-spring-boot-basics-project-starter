@@ -2,31 +2,41 @@ package com.udacity.jwdnd.course1.cloudstorage.services;
 
 import com.udacity.jwdnd.course1.cloudstorage.mapper.UserMapper;
 import com.udacity.jwdnd.course1.cloudstorage.model.Users;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
-
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.List;
+
 
 @Service
 
+
 public class UserService {
-    @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    private HashService hashService;
-    public int insertUser(Users users){
-        SecureRandom random= new SecureRandom();
-        byte[] salt=new byte[16];
-        random.nextBytes(salt);
-        String encodedSalt= Base64.getEncoder().encodeToString(salt);
-        String hashedPassword=hashService.getHashedValue(users.getPassWord(), encodedSalt);
-        users.setSalt(encodedSalt);
-        users.setPassWord(hashedPassword);
-        return userMapper.insertUser(users);
+
+    private final UserMapper userMapper;
+    private final HashService hashService;
+
+    public UserService(UserMapper userMapper, HashService hashService) {
+        this.userMapper = userMapper;
+        this.hashService = hashService;
     }
 
+    public boolean isUsernameAvailable(String username) {
+        return userMapper.getUser(username) == null;
+    }
 
+    public int insertUser(Users user) {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        String encodedSalt = Base64.getEncoder().encodeToString(salt);
+        String hashedPassword = hashService.getHashedValue(user.getPassWord(), encodedSalt);
+        user.setPassWord(hashedPassword);
+        user.setSalt(encodedSalt);
+        return userMapper.insertUser(user);
+    }
 
+    public Users getUser(String username) {
+        return userMapper.getUser(username);
+    }
 }

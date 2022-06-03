@@ -16,7 +16,9 @@ public class CredentialsController {
             if(credentialsService.addCredentials(credentials,1)>0){
                 return "redirect:/result?success";
             }
-
+        if(credentialsService.updateCredentials(credentials)>0){
+            return "redirect:/result?success";
+        }
         }
         return "redirect:/result?error";
     }
