@@ -47,6 +47,6 @@ public class CredentialsService {
     }
 
     public int updateCredentials(Credentials credentials) {
-        return credentialsMapper.updateCredentials(this.encryptPassword(credentials));
+        return credentialsMapper.updateCredentials(encryptPassword(credentials));
     }
 }

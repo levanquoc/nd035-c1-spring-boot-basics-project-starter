@@ -2,10 +2,7 @@ package com.udacity.jwdnd.course1.cloudstorage;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -13,6 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 
 import java.io.File;
+import java.time.Duration;
+import java.util.List;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CloudStorageApplicationTests {
 
@@ -118,7 +118,95 @@ class CloudStorageApplicationTests {
 		webDriverWait.until(ExpectedConditions.titleContains("Home"));
 
 	}
+	private void doLogout(){
+		WebElement logoutButton = driver.findElement(By.id("logout"));
+		logoutButton.click();
 
+	}
+	private void addNotes(String noteTitle,String noteDescription) {
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 30);
+		JavascriptExecutor jse = (JavascriptExecutor) driver;
+		WebElement notesTab = driver.findElement(By.id("nav-notes-tab"));
+		jse.executeScript("arguments[0].click()", notesTab);
+		webDriverWait.withTimeout(Duration.ofSeconds(30));
+		WebElement newNote = driver.findElement(By.id("newnote"));
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(newNote)).click();
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("note-title")));
+		WebElement notetite = driver.findElement(By.id("note-title"));
+		notetite.sendKeys(noteTitle);
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("note-description")));
+		WebElement notedescription = driver.findElement(By.id("note-description"));
+		notedescription.sendKeys(noteDescription);
+		WebElement savechanges = driver.findElement(By.id("save-changes"));
+		savechanges.click();
+		Assertions.assertEquals("http://localhost:" + this.port + "/result?success", driver.getCurrentUrl());
+	}
+	private void updateNotes(String newNoteTitle,String newNoteDescription){
+		driver.get("http://localhost:" + this.port + "/home");
+		JavascriptExecutor jse= (JavascriptExecutor) driver;
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 30);
+		WebElement notesTab = driver.findElement(By.id("nav-notes-tab"));
+		jse.executeScript("arguments[0].click()", notesTab);
+		WebElement notesTable = driver.findElement(By.id("userTable"));
+		List<WebElement> notesList = notesTable.findElements(By.tagName("td"));
+		WebElement editElement = null;
+		for (int i = 0; i < notesList.size(); i++) {
+			WebElement element = notesList.get(i);
+			editElement = element.findElement(By.name("edit"));
+			if (editElement != null){
+				break;
+			}
+		}
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(editElement)).click();
+		WebElement notetitle = driver.findElement(By.id("note-title"));
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(notetitle));
+		notetitle.clear();
+		notetitle.sendKeys(newNoteTitle);
+		WebElement notedescription = driver.findElement(By.id("note-description"));
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(notedescription));
+		notedescription.clear();
+		notedescription.sendKeys(newNoteDescription);
+		WebElement savechanges = driver.findElement(By.id("save-changes"));
+		savechanges.click();
+		Assertions.assertEquals("Result", driver.getTitle());
+
+
+		driver.get("http://localhost:" + this.port + "/home");
+		notesTab = driver.findElement(By.id("nav-notes-tab"));
+		jse.executeScript("arguments[0].click()", notesTab);
+		notesTable = driver.findElement(By.id("userTable"));
+		notesList = notesTable.findElements(By.tagName("th"));
+		Boolean edited = false;
+		for (int i = 0; i < notesList.size(); i++) {
+			WebElement element = notesList.get(i);
+			if (element.getAttribute("innerHTML").equals(newNoteTitle)) {
+				edited = true;
+				break;
+			}
+		}
+		Assertions.assertTrue(edited);
+	}
+	private void deleteNote(){
+		driver.get("http://localhost:" + this.port + "/home");
+		JavascriptExecutor jse= (JavascriptExecutor) driver;
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 30);
+		WebElement notesTab = driver.findElement(By.id("nav-notes-tab"));
+		jse.executeScript("arguments[0].click()", notesTab);
+		WebElement notesTable = driver.findElement(By.id("userTable"));
+		List<WebElement> notesList = notesTable.findElements(By.tagName("td"));
+		WebElement deleteElement = null;
+		for (int i = 0; i < notesList.size(); i++) {
+			WebElement element = notesList.get(i);
+			deleteElement = element.findElement(By.name("delete"));
+			if (deleteElement != null){
+				break;
+			}
+		}
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(deleteElement)).click();
+        Alert alert = driver.switchTo().alert();
+        alert.accept();
+		Assertions.assertEquals("http://localhost:" +this.port+"/result?success",driver.getCurrentUrl());
+	}
 	/**
 	 * PLEASE DO NOT DELETE THIS TEST. You may modify this test to work with the 
 	 * rest of your code. 
@@ -136,7 +224,7 @@ class CloudStorageApplicationTests {
 		doMockSignUp("Redirection","Test","RT","123");
 		
 		// Check if we have been redirected to the log in page.
-		Assertions.assertEquals("http://localhost:" + this.port + "/login", driver.getCurrentUrl());
+		Assertions.assertEquals("http://localhost:" + this.port + "/signup?success", driver.getCurrentUrl());
 	}
 
 	/**
@@ -200,6 +288,130 @@ class CloudStorageApplicationTests {
 
 	}
 
+	@Test
+	public void testUnauthorized(){
+		driver.get("http://localhost:" + this.port + "/home");
+		Assertions.assertEquals("http://localhost:" + this.port + "/login", driver.getCurrentUrl());
+		driver.get("http://localhost:" + this.port + "/notes");
+		Assertions.assertEquals("http://localhost:" + this.port + "/login", driver.getCurrentUrl());
+		driver.get("http://localhost:" + this.port + "/credentials");
+		Assertions.assertEquals("http://localhost:" + this.port + "/login", driver.getCurrentUrl());
+		driver.get("http://localhost:" + this.port + "/login");
+		Assertions.assertEquals("http://localhost:" + this.port + "/login", driver.getCurrentUrl());
+		driver.get("http://localhost:" + this.port + "/signup");
+		Assertions.assertEquals("http://localhost:" + this.port + "/signup", driver.getCurrentUrl());
+	}
 
 
+	@Test
+	public void testLogoutNotAccessHomePage(){
+		doMockSignUp("Quoc","LeVan","admin","123");
+		doLogIn("admin","123");
+		Assertions.assertEquals("Home",driver.getTitle());
+		doLogout();
+		driver.get("http://localhost:" + this.port + "/home");
+		Assertions.assertEquals("Login", driver.getTitle());
+	}
+	@Test
+	public void testDoNotes(){
+		doMockSignUp("Quoc","LeVan","admin","123");
+		doLogIn("admin","123");
+		addNotes("noteTitle","noteDescription");
+		updateNotes("newNoteTitle","newNoteDescription");
+		deleteNote();
+	}
+
+	@Test
+	public void testDoCredentials(){
+		doMockSignUp("Quoc","LeVan","admin","123");
+		doLogIn("admin","123");
+		addCredential("URL","username","password");
+		updateCredential("newURL");
+		deleteCredential();
+	}
+
+	private void deleteCredential() {
+		driver.get("http://localhost:" + this.port + "/home");
+		JavascriptExecutor jse= (JavascriptExecutor) driver;
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 30);
+		WebElement credentialsTab = driver.findElement(By.id("nav-credentials-tab"));
+		jse.executeScript("arguments[0].click()", credentialsTab);
+		WebElement credentialsTable = driver.findElement(By.id("credentialTable"));
+		List<WebElement> credentialsList = credentialsTable.findElements(By.tagName("td"));
+		WebElement deleteElement = null;
+		for (int i = 0; i < credentialsList.size(); i++) {
+			WebElement element = credentialsList.get(i);
+			deleteElement = element.findElement(By.name("deleteCredentials"));
+			if (deleteElement != null){
+				break;
+			}
+		}
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(deleteElement)).click();
+		Alert alert = driver.switchTo().alert();
+		alert.accept();
+		Assertions.assertEquals("http://localhost:" +this.port+"/result?success",driver.getCurrentUrl());
+	}
+
+	private void updateCredential(String newUrl) {
+		driver.get("http://localhost:" + this.port + "/home");
+		JavascriptExecutor jse= (JavascriptExecutor) driver;
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 30);
+		WebElement credentialTab = driver.findElement(By.id("nav-credentials-tab"));
+		jse.executeScript("arguments[0].click()", credentialTab);
+		WebElement credentialsTable = driver.findElement(By.id("credentialTable"));
+		List<WebElement> credentialsList = credentialsTable.findElements(By.tagName("td"));
+		WebElement editElement = null;
+		for (int i = 0; i < credentialsList.size(); i++) {
+			WebElement element = credentialsList.get(i);
+			editElement = element.findElement(By.name("editCredential"));
+			if (editElement != null){
+				break;
+			}
+		}
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(editElement)).click();
+		WebElement url = driver.findElement(By.id("credential-url"));
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(url));
+		url.clear();
+		url.sendKeys(newUrl);
+		WebElement savechanges = driver.findElement(By.id("save-changes-credential"));
+		savechanges.click();
+		Assertions.assertEquals("http://localhost:"+this.port +"/result?success", driver.getCurrentUrl());
+
+		driver.get("http://localhost:" + this.port + "/home");
+		credentialTab = driver.findElement(By.id("nav-credentials-tab"));
+		jse.executeScript("arguments[0].click()", credentialTab);
+		credentialsTable = driver.findElement(By.id("credentialTable"));
+		credentialsList = credentialsTable.findElements(By.tagName("th"));
+		Boolean edited = false;
+		for (int i = 0; i < credentialsList.size(); i++) {
+			WebElement element = credentialsList.get(i);
+			if (element.getAttribute("innerHTML").equals(newUrl)) {
+				edited = true;
+				break;
+			}
+		}
+		Assertions.assertTrue(edited);
+	}
+
+	private void addCredential(String URL, String userName,String passWord) {
+		WebDriverWait webDriverWait = new WebDriverWait(driver, 30);
+		JavascriptExecutor jse = (JavascriptExecutor) driver;
+		WebElement credentialTab = driver.findElement(By.id("nav-credentials-tab"));
+		jse.executeScript("arguments[0].click()", credentialTab);
+		webDriverWait.withTimeout(Duration.ofSeconds(30));
+		WebElement newCredential = driver.findElement(By.id("newcredential"));
+		webDriverWait.until(ExpectedConditions.elementToBeClickable(newCredential)).click();
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("credential-url")));
+		WebElement url = driver.findElement(By.id("credential-url"));
+		url.sendKeys(URL);
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("credential-username")));
+		WebElement username = driver.findElement(By.id("credential-username"));
+		username.sendKeys(userName);
+		webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("credential-password")));
+		WebElement password = driver.findElement(By.id("credential-password"));
+		password.sendKeys(passWord);
+		WebElement savechanges = driver.findElement(By.id("save-changes-credential"));
+		savechanges.click();
+		Assertions.assertEquals("http://localhost:" + this.port + "/result?success", driver.getCurrentUrl());
+	}
 }
