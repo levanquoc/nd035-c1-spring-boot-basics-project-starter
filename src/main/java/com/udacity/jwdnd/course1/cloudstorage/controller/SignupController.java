@@ -21,6 +21,9 @@ public class SignupController {
     }
     @PostMapping("/signup")
     public String register(@ModelAttribute Users users){
+        if(userService.getUser(users.getUserName())!=null){
+            return "redirect:/signup?usersexits";
+        }
         try {
             userService.insertUser(users);
         }catch (Exception e){

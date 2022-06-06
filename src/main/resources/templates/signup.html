@@ -19,6 +19,9 @@
                 <div th:if="${param.success}" id="success-msg" class="alert alert-dark">
                     You successfully signed up! Please continue to the <a th:href="@{/login}">login</a> page.
                 </div>
+                <div th:if="${param.usersexits}" id="user-exits-msg" class="alert alert-dark">
+                    Users already exists
+                </div>
                 <div th:if="${param.error}" class="alert alert-danger">
                     <span>Example Signup Error Message</span>
                 </div>
