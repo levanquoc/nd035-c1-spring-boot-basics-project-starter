@@ -34,7 +34,7 @@ class CloudStorageApplicationTests {
 	@AfterEach
 	public void afterEach() {
 		if (this.driver != null) {
-			driver.quit();
+			driver.close();
 		}
 	}
 
@@ -314,8 +314,8 @@ class CloudStorageApplicationTests {
 	}
 	@Test
 	public void testDoNotes(){
-		doMockSignUp("Quoc","LeVan","admin","123");
-		doLogIn("admin","123");
+		doMockSignUp("Quoc","LeVan","admin1","123");
+		doLogIn("admin1","123");
 		addNotes("noteTitle","noteDescription");
 		updateNotes("newNoteTitle","newNoteDescription");
 		deleteNote();
@@ -323,8 +323,8 @@ class CloudStorageApplicationTests {
 
 	@Test
 	public void testDoCredentials(){
-		doMockSignUp("Quoc","LeVan","admin","123");
-		doLogIn("admin","123");
+		doMockSignUp("Quoc","LeVan","admin2","123");
+		doLogIn("admin2","123");
 		addCredential("URL","username","password");
 		updateCredential("newURL");
 		deleteCredential();
